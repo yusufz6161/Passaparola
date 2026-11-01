@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Passaparola Mobil Oyun</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Mobil Cihaz Görünümü Konteyneri */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            max-width: 430px; /* Mobil ekran genişliği */
+            max-height: 932px;
+            position: relative;
+            background: radial-gradient(circle at top right, #2563eb, #312e81, #020617);
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        }
+
+        /* Yoğun Yüzen Harfler (Arka Plan) */
+        .bg-letters {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            margin: 0;
+            padding: 0;
+            pointer-events: none;
+        }
+        .bg-letters li {
+            position: absolute;
+            display: block;
+            list-style: none;
+            color: rgba(255, 255, 255, 0.05); /* Filigran gibi görünmesi için saydam */
+            font-weight: 900;
+            font-family: 'Inter', sans-serif;
+            animation: animate-letter 25s linear infinite;
+            bottom: -150px;
+        }
+        .bg-letters li:nth-child(1) { left: 25%; font-size: 80px; animation-delay: 0s; }
+        .bg-letters li:nth-child(2) { left: 10%; font-size: 30px; animation-delay: 2s; animation-duration: 12s; }
+        .bg-letters li:nth-child(3) { left: 70%; font-size: 40px; animation-delay: 4s; }
+        .bg-letters li:nth-child(4) { left: 40%; font-size: 60px; animation-delay: 0s; animation-duration: 18s; }
+        .bg-letters li:nth-child(5) { left: 65%; font-size: 20px; animation-delay: 0s; }
+        .bg-letters li:nth-child(6) { left: 75%; font-size: 110px; animation-delay: 3s; }
+        .bg-letters li:nth-child(7) { left: 35%; font-size: 150px; animation-delay: 7s; }
+        .bg-letters li:nth-child(8) { left: 50%; font-size: 25px; animation-delay: 15s; animation-duration: 45s; }
+        .bg-letters li:nth-child(9) { left: 20%; font-size: 15px; animation-delay: 2s; animation-duration: 35s; }
+        .bg-letters li:nth-child(10) { left: 85%; font-size: 150px; animation-delay: 0s; animation-duration: 11s; }
+        .bg-letters li:nth-child(11) { left: 5%; font-size: 85px; animation-delay: 1s; animation-duration: 22s; }
+        .bg-letters li:nth-child(12) { left: 15%; font-size: 45px; animation-delay: 5s; animation-duration: 18s; }
+        .bg-letters li:nth-child(13) { left: 28%; font-size: 100px; animation-delay: 2s; animation-duration: 28s; }
+        .bg-letters li:nth-child(14) { left: 45%; font-size: 35px; animation-delay: 8s; animation-duration: 15s; }
+        .bg-letters li:nth-child(15) { left: 55%; font-size: 140px; animation-delay: 12s; animation-duration: 32s; }
+        .bg-letters li:nth-child(16) { left: 68%; font-size: 55px; animation-delay: 4s; animation-duration: 20s; }
+        .bg-letters li:nth-child(17) { left: 82%; font-size: 90px; animation-delay: 9s; animation-duration: 24s; }
+        .bg-letters li:nth-child(18) { left: 92%; font-size: 120px; animation-delay: 1s; animation-duration: 26s; }
+        .bg-letters li:nth-child(19) { left: 33%; font-size: 65px; animation-delay: 14s; animation-duration: 21s; }
+        .bg-letters li:nth-child(20) { left: 77%; font-size: 25px; animation-delay: 11s; animation-duration: 16s; }
+        .bg-letters li:nth-child(21) { left: 12%; font-size: 70px; animation-delay: 18s; animation-duration: 35s; }
+        .bg-letters li:nth-child(22) { left: 48%; font-size: 110px; animation-delay: 6s; animation-duration: 29s; }
+        .bg-letters li:nth-child(23) { left: 62%; font-size: 40px; animation-delay: 16s; animation-duration: 19s; }
+        .bg-letters li:nth-child(24) { left: 88%; font-size: 80px; animation-delay: 7s; animation-duration: 23s; }
+        .bg-letters li:nth-child(25) { left: 3%; font-size: 50px; animation-delay: 10s; animation-duration: 27s; }
+
+        @keyframes animate-letter {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Ekran Geçişleri */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 10;
+        }
+        .screen.visible { opacity: 1; }
+
+        /* Cam Efekti Paneller */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Harf Düğümleri (Çember) */
+        .letter-node {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(255,255,255,0.15);
+            color: #d1d5db;
+        }
+        .letter-node.active {
+            background-color: #3b82f6;
+            box-shadow: 0 0 15px #3b82f6;
+            border-color: #93c5fd;
+            color: white;
+            transform: translate(-50%, -50%) scale(1.4);
+            z-index: 20;
+        }
+        .letter-node.correct {
+            background-color: #10b981;
+            border-color: #34d399;
+            color: white;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+        .letter-node.passed {
+            background-color: #f59e0b;
+            border-color: #fbbf24;
+            color: white;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+        }
+
+        /* Yanlış Cevap Sallanma Efekti */
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            25% {transform: translateX(-8px);}
+            75% {transform: translateX(8px);}
+        }
+        .error-shake {
+            animation: shake 0.4s ease-in-out;
+            border-color: #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            color: #fca5a5 !important;
+        }
+
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- YÜZEN HARFLER (ARKA PLAN) -->
+        <ul class="bg-letters">
+            <li>A</li><li>P</li><li>R</li><li>O</li><li>L</li>
+            <li>S</li><li>E</li><li>T</li><li>M</li><li>K</li>
+            <li>C</li><li>F</li><li>H</li><li>Z</li><li>Y</li>
+            <li>B</li><li>D</li><li>G</li><li>N</li><li>V</li>
+            <li>I</li><li>U</li><li>Ş</li><li>Ç</li><li>Ö</li>
+        </ul>
+
+        <!-- PROFİL EKRANI -->
+        <div id="profileScreen" class="screen flex-col items-center justify-center p-6">
+            <div class="glass-panel p-8 rounded-3xl w-full text-center shadow-2xl border-t border-white/30">
+                <div class="w-20 h-20 bg-blue-500 rounded-full mx-auto flex items-center justify-center mb-4 shadow-lg border-4 border-[#1e1b4b]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-black mb-2 text-white">HOŞ GELDİN</h2>
+                <p class="text-gray-300 mb-8 text-sm">Liderlik tablosunda yer almak için bir kullanıcı adı belirle.</p>
+                <input type="text" id="usernameInput" placeholder="Kullanıcı Adın" class="w-full bg-black/30 border border-gray-600 rounded-xl px-4 py-4 text-center text-xl text-white mb-6 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400 transition-all" autocomplete="off" />
+                <button onclick="saveUsername()" class="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-bold py-4 rounded-xl active:scale-95 transition-all shadow-lg shadow-blue-500/50">
+                    KAYDET VE BAŞLA
+                </button>
+            </div>
+        </div>
+
+        <!-- ANA MENÜ EKRANI -->
+        <div id="menuScreen" class="screen flex-col items-center justify-center p-6 relative">
+            <div class="absolute top-4 right-4 flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                </svg>
+                <span id="displayUsername" class="text-sm font-bold text-gray-200"></span>
+            </div>
+
+            <div class="relative z-10 w-full text-center mt-8">
+                <h1 class="text-5xl font-extrabold mb-2 tracking-tight text-white drop-shadow-lg">
+                    PASSAPAROLA
+                </h1>
+                <p class="text-gray-300 mb-10">Bilgini Sına, Harfleri Tamamla!</p>
+                
+                <button onclick="showLeaderboard()" class="mb-6 w-full glass-panel py-3 rounded-2xl text-lg font-bold text-yellow-400 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-md border border-yellow-500/30">
+                    🏆 Liderlik Tablosu
+                </button>
+
+                <div class="space-y-4 w-full">
+                    <button onclick="openLevelScreen('futbol')" class="w-full glass-panel py-4 rounded-2xl text-xl font-semibold hover:bg-white/20 active:scale-95 transition-all flex items-center justify-between px-6 shadow-md">
+                        <span>⚽ Futbol</span>
+                        <span id="lvl-futbol"></span>
+                    </button>
+                    <button onclick="openLevelScreen('sanat')" class="w-full glass-panel py-4 rounded-2xl text-xl font-semibold hover:bg-white/20 active:scale-95 transition-all flex items-center justify-between px-6 shadow-md">
+                        <span>🎨 Sanat</span>
+                        <span id="lvl-sanat"></span>
+                    </button>
+                    <button onclick="openLevelScreen('genel')" class="w-full glass-panel py-4 rounded-2xl text-xl font-semibold hover:bg-white/20 active:scale-95 transition-all flex items-center justify-between px-6 shadow-md">
+                        <span>🌍 Genel Kültür</span>
+                        <span id="lvl-genel"></span>
+                    </button>
+                    <button onclick="openLevelScreen('edebiyat')" class="w-full glass-panel py-4 rounded-2xl text-xl font-semibold hover:bg-white/20 active:scale-95 transition-all flex items-center justify-between px-6 shadow-md">
+                        <span>📚 Edebiyat</span>
+                        <span id="lvl-edebiyat"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEVİYE SEÇİM EKRANI -->
+        <div id="levelScreen" class="screen flex-col items-center justify-start p-6 pt-12">
+            <button onclick="returnToMenu()" class="absolute top-6 left-6 text-white hover:text-blue-300 bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors active:scale-95 shadow-md flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <div class="w-full text-center mt-6 mb-8">
+                <h2 id="levelScreenTitle" class="text-4xl font-black text-white drop-shadow-md uppercase tracking-wide">KATEGORİ</h2>
+                <p class="text-gray-300 mt-2 text-sm">Oynamak istediğin seviyeyi seç</p>
+            </div>
+            
+            <div class="w-full flex-1 flex flex-col space-y-4" id="levelButtonsContainer">
+                <!-- Butonlar JS ile oluşturulacak -->
+            </div>
+        </div>
+
+        <!-- OYUN EKRANI -->
+        <div id="gameScreen" class="screen flex-col items-center justify-start p-4 pb-8">
+            <div class="w-full flex justify-between items-center px-2 py-4">
+                <button onclick="quitGame()" class="text-white hover:text-red-400 bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-colors active:scale-95 shadow-md flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <div class="flex flex-col items-center">
+                    <span id="uiCategoryName" class="font-bold text-sm text-blue-300 uppercase tracking-widest">KATEGORİ</span>
+                    <span id="gameTimer" class="font-mono text-2xl font-black text-white drop-shadow-md">00:00</span>
+                </div>
+                <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
+                    <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                    <span id="uiRemaining" class="text-gray-300 font-bold text-sm">28 Kaldı</span>
+                </div>
+            </div>
+
+            <!-- Dairesel Harfler -->
+            <div class="relative w-full max-w-[340px] aspect-square my-6 mx-auto flex-shrink-0" id="circleContainer">
+                <!-- Harfler JS ile buraya çizilecek -->
+            </div>
+
+            <!-- Soru ve Cevap Alanı -->
+            <div class="w-full flex-1 flex flex-col justify-end">
+                <div class="glass-panel p-5 rounded-3xl flex flex-col items-center shadow-lg relative z-10 border-t border-white/20">
+                    <div class="absolute -top-7 bg-gradient-to-b from-blue-500 to-blue-700 text-white w-14 h-14 flex items-center justify-center rounded-full text-3xl font-black shadow-lg border-4 border-[#1e1b4b]" id="currentLetterBadge">
+                        A
+                    </div>
+                    <p id="questionText" class="text-center text-white text-lg font-medium mt-6 mb-5 min-h-[3.5rem] leading-snug">
+                        Soru yükleniyor...
+                    </p>
+                    <div class="w-full flex flex-col gap-3">
+                        <input type="text" id="answerInput" class="w-full bg-black/40 border border-gray-500 rounded-2xl px-4 py-3.5 text-center text-xl text-white font-bold tracking-wide focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400 transition-all uppercase" autocomplete="off" placeholder="CEVABIN..." />
+                        <div class="flex gap-3">
+                            <button onclick="handleAnswer()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white font-black text-lg py-3.5 rounded-2xl active:scale-95 transition-all shadow-md shadow-emerald-500/30">
+                                CEVAPLA
+                            </button>
+                            <button onclick="handlePass()" class="flex-1 bg-yellow-500 hover:bg-yellow-400 text-white font-black text-lg py-3.5 rounded-2xl active:scale-95 transition-all shadow-md shadow-yellow-500/30">
+                                PAS GEÇ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SONUÇ EKRANI -->
+        <div id="endScreen" class="screen flex-col items-center justify-center p-6">
+            <div class="glass-panel p-8 rounded-3xl w-full text-center shadow-2xl border-t border-white/30">
+                <h2 id="endTitle" class="text-4xl font-black mb-2 text-white">SÜRE BİTTİ!</h2>
+                <p id="endMessage" class="text-gray-300 mb-6 text-lg">Oyun tamamlandı.</p>
+                
+                <div id="scoreContainer" class="hidden mb-6 flex flex-col items-center justify-center bg-yellow-500/20 p-4 rounded-2xl border border-yellow-500/50">
+                    <span class="text-sm text-yellow-200 uppercase tracking-widest font-bold">TOPLAM PUAN</span>
+                    <span id="finalScore" class="text-6xl font-black text-yellow-400 drop-shadow-lg my-1">0</span>
+                    <span id="scoreDetail" class="text-xs text-yellow-100/70"></span>
+                </div>
+
+                <div class="flex justify-center gap-4 mb-8">
+                    <div class="flex flex-col items-center p-4 bg-black/30 rounded-2xl w-24 border border-emerald-500/30">
+                        <span class="text-3xl font-black text-emerald-400" id="correctCount">0</span>
+                        <span class="text-xs text-gray-400 mt-1 uppercase font-bold">Doğru</span>
+                    </div>
+                    <div class="flex flex-col items-center p-4 bg-black/30 rounded-2xl w-24 border border-yellow-500/30">
+                        <span class="text-3xl font-black text-yellow-400" id="passCount">0</span>
+                        <span class="text-xs text-gray-400 mt-1 uppercase font-bold">Pas</span>
+                    </div>
+                    <div class="flex flex-col items-center p-4 bg-black/30 rounded-2xl w-24 border border-red-500/30">
+                        <span class="text-3xl font-black text-red-400" id="emptyCount">0</span>
+                        <span class="text-xs text-gray-400 mt-1 uppercase font-bold">Boş</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <button id="btnNextLevel" onclick="nextLevel()" class="w-full hidden bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-black text-lg py-4 rounded-2xl active:scale-95 transition-all shadow-lg">
+                        SONRAKİ SEVİYE ➔
+                    </button>
+                    <button id="btnRetry" onclick="retryLevel()" class="w-full hidden bg-orange-500 hover:bg-orange-400 text-white font-black text-lg py-4 rounded-2xl active:scale-95 transition-all shadow-lg">
+                        TEKRAR DENE ↺
+                    </button>
+                    <button onclick="returnToLevels()" class="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-4 rounded-2xl active:scale-95 transition-all border border-white/20">
+                        SEVİYELERE DÖN
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LİDERLİK TABLOSU EKRANI -->
+        <div id="leaderboardScreen" class="screen flex-col items-center justify-start p-6 pt-12">
+            <button onclick="returnToMenu()" class="absolute top-6 left-6 text-white hover:text-blue-300 bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors active:scale-95 shadow-md flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <div class="w-full text-center mt-6 mb-6">
+                <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-500 drop-shadow-md uppercase tracking-wide">
+                    EN İYİLER 🏆
+                </h2>
+                <p class="text-gray-300 mt-2 text-sm">Tüm kategorilerdeki en yüksek puanlar</p>
+            </div>
+            
+            <div class="w-full flex-1 overflow-y-auto pr-2 pb-4 space-y-3" id="leaderboardList">
+                <div class="text-center text-gray-400 mt-10">Yükleniyor...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- OYUN MANTIĞI VE FİREBASE BAĞLANTISI -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db, auth, currentUserId;
+        let isFirebaseActive = false;
+
+        async function initFirebase() {
+            try {
+                // =====================================================================
+                // KENDİ VERİTABANINI BAĞLAMAK İÇİN BURAYI KULLANABİLİRSİN:
+                // 1. firebase.google.com adresinden proje oluştur.
+                // 2. Sana verilen "firebaseConfig" içerisindeki bilgileri buraya yaz.
+                // (Eğer boş bırakırsan oyun çevrimdışı -offline- olarak kendi cihazında sorunsuz çalışır)
+                // =====================================================================
+                const myFirebaseConfig = {
+                    apiKey: "AIzaSyAXPTO7scmer4-EBE3aiBMmwhKdPzBlOLk",
+                    authDomain: "passaparola-672d2.firebaseapp.com",
+                    projectId: "passaparola-672d2",
+                    storageBucket: "passaparola-672d2.firebasestorage.app",
+                    messagingSenderId: "62169652340",
+                    appId: "1:62169652340:web:c29c7a6a438af555168521",
+                    measurementId: "G-6GHFXR2T88"
+                };
+
+                let firebaseConfig = null;
+                
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                } else if (Object.keys(myFirebaseConfig).length > 0) {
+                    firebaseConfig = myFirebaseConfig;
+                }
+                
+                if (firebaseConfig) {
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    currentUserId = auth.currentUser.uid;
+                    isFirebaseActive = true;
+                    console.log("Bulut veritabanı başarıyla bağlandı!");
+                } else {
+                    console.warn("Firebase ayarları bulunamadı. Oyun yerel (çevrimdışı) modda çalışıyor.");
+                }
+            } catch (error) {
+                console.warn("Firebase başlatılamadı:", error);
+            }
+        }
+        
+        initFirebase();
+
+        // 28 Harflik Türk Alfabesi
+        const letters = ['A', 'B', 'C', 'Ç', 'D', 'E', 'F', 'G', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'Y', 'Z'];
+        const categoryNames = { futbol: 'Futbol', sanat: 'Sanat', genel: 'Genel Kültür', edebiyat: 'Edebiyat' };
+
+        // GENİŞLETİLMİŞ VE TAMAMLANMIŞ SORU HAVUZU (336 Soru)
+        const questionDB = {
+            futbol: {
+                1: {
+                    'A': ["Takım arkadaşına gol atması için verilen son pas.", "Asist"],
+                    'B': ["Serbest vuruşlarda savunma oyuncularının yan yana dizilerek oluşturduğu set.", "Baraj"],
+                    'C': ["Futbolda kural ihlali yapan oyuncuya veya takıma hakem tarafından verilen yaptırım.", "Ceza"],
+                    'Ç': ["Topla birlikte ilerlerken rakip oyuncuyu aldatarak geçme hareketi.", "Çalım"],
+                    'D': ["Futbolda kendi kalesini gole karşı korumakla görevli gerideki oyuncuların genel adı.", "Defans"],
+                    'E': ["Kaleci hariç sahada topa kol ile dokunulması sonucu oluşan kural ihlali.", "El"],
+                    'F': ["Rakip oyuncuya kurallar dışında yapılan sert müdahale.", "Faul"],
+                    'G': ["Topun kale çizgisini tamamen geçmesiyle kazanılan sayı.", "Gol"],
+                    'H': ["Maçı kurallara uygun şekilde yöneten yetkili kişi.", "Hakem"],
+                    'I': ["Futbolcuların maça çıkmadan önce sakatlanmamak için yaptığı kas açma hareketleri.", "Isınma"],
+                    'İ': ["Bir futbol takımının aynı maçta attığı veya yediği sayının ikili karşılığı.", "İki"],
+                    'J': ["Yıllarca unutulmayan, çok estetik ve seyirlik gollere verilen televizyon terimi.", "Jenerik"],
+                    'K': ["Sahada takımın lideri olan ve kolunda pazubent taşıyan oyuncu.", "Kaptan"],
+                    'L': ["Takımların puan usulüyle birbirleriyle mücadele ettikleri uzun maraton.", "Lig"],
+                    'M': ["İki takım arasında oynanan 90 dakikalık müsabaka.", "Maç"],
+                    'N': ["Bir takımın turnuva veya sezon boyunca hiç yenilgi almaması durumu.", "Namağlup"],
+                    'O': ["Hücum oyuncusunun topla buluştuğu anda sondan ikinci savunma oyuncusunun ilerisinde olması.", "Ofsayt"],
+                    'Ö': ["Defansın hemen önünde oynayan ve top kesen orta saha oyuncusu.", "Önlibero"],
+                    'P': ["Topu takım arkadaşına ayakla aktarma eylemi.", "Pas"],
+                    'R': ["Sahada kendi takımın dışında karşılaştığın diğer takım.", "Rakip"],
+                    'S': ["Futbol maçlarının oynandığı çimle kaplı alan.", "Saha"],
+                    'Ş': ["Kaleye gol atmak amacıyla topa ayakla yapılan sert ve hızlı vuruş.", "Şut"],
+                    'T': ["Topun sahanın uzun yan çizgilerinden dışarı çıkması.", "Taç"],
+                    'U': ["Kupa maçlarında beraberlik bozulmadığında eklenen ilave süre.", "Uzatma"],
+                    'Ü': ["Galip gelen takıma verilen puan sayısı.", "Üç"],
+                    'V': ["Hakemin tartışmalı kararları ekrandan tekrar izlemesini sağlayan teknolojik sistem.", "VAR"],
+                    'Y': ["İlk on birde maça başlamayan ama kenarda bekleyen oyuncu.", "Yedek"],
+                    'Z': ["Üzerinde futbol oynanan çim yüzey.", "Zemin"]
+                },
+                2: {
+                    'A': ["Puan eşitliği durumunda takımların attıkları ve yedikleri gollerin farkı.", "Averaj"],
+                    'B': ["Bir futbolcunun başka bir kulübe transfer olması için ödenen bedel.", "Bonservis"],
+                    'C': ["İtalya liglerinde oynamış, A Milli formayı giyen 'Ünder' soyadlı futbolcumuz.", "Cengiz"],
+                    'Ç': ["Sahanın sınırlarını belirleyen ve topun çıkıp çıkmadığına karar verilen beyaz boyalı hat.", "Çizgi"],
+                    'D': ["Bir takımın kendi stadı dışında rakip takımın stadında oynadığı maç.", "Deplasman"],
+                    'E': ["Sadece paslaşarak kullanılabilen, doğrudan kaleye vurulamayan serbest vuruş tür.", "Endirekt"],
+                    'F': ["Maçların hangi hafta kiminle oynanacağını gösteren maç takvimi.", "Fikstür"],
+                    'G': ["Şampiyonlar Ligi'nde takımların dörderli olarak ayrıldığı torbalar.", "Grup"],
+                    'H': ["Bir futbolcunun aynı maçta 3 gol atması durumu.", "Hattrick"],
+                    'I': ["Taraftarın hakemi veya rakip takımı protesto etmek için çıkardığı tiz ses.", "Islık"],
+                    'İ': ["Kırmızı kart gören oyuncunun maçtan atılması eylemi.", "İhraç"],
+                    'J': ["Siyah-beyaz çubuklu formaya sahip Torino merkezli İtalyan kulübü.", "Juventus"],
+                    'K': ["Altında çiviler veya dişler bulunan özel futbol ayakkabısı.", "Krampon"],
+                    'L': ["Savunmanın en arkasında serbest oynayan defans oyuncusu mevkisi.", "Libero"],
+                    'M': ["Rakip oyuncuyu topla buluşmaması için yakından savunma işi.", "Markaj"],
+                    'N': ["Maradona'nın efsaneleştiği, açık mavi formaya sahip İtalyan takımı.", "Napoli"],
+                    'O': ["Defans ile forvet arasındaki bağlantıyı kuran bölge.", "Ortasaha"],
+                    'Ö': ["Bir maçın sadece önemli anlarını ve gollerini gösteren kısa video.", "Özet"],
+                    'P': ["Topun dibine ve falsolu vurarak kalecinin uzanamayacağı köşeye bırakılan şut.", "Plase"],
+                    'R': ["Havadan gelen topa oyuncunun ters perende atarak havada vurması hareketi.", "Röveşata"],
+                    'S': ["Savunma hattının tam ortasında oynayan defans oyuncusu.", "Stoper"],
+                    'Ş': ["Lig sonunda en yüksek puanı alıp kupayı kazanan takım.", "Şampiyon"],
+                    'T': ["Teknik direktörün sahada uygulattığı oyun planı.", "Taktik"],
+                    'U': ["Kalecilerin köşeye giden topu çıkarmak için havada süzülmesi.", "Uçan"],
+                    'Ü': ["Kale direklerinin en üstünde bulunan yatay direk.", "Üstdirek"],
+                    'V': ["Havadan gelen topa yere düşmeden gelişine ayakla yapılan vuruş.", "Vole"],
+                    'Y': ["Bir futbol maçının 45 dakikalık her bir bölüm.", "Yarı"],
+                    'Z': ["Çok sert ve düz giden şutlar için kullanılan halk ağzı futbol tabiri.", "Zımba"]
+                },
+                3: {
+                    'A': ["Eskiden uzatma dakikalarında ilk golü atan takımın maçı bitirmesini sağlayan kural.", "Altın"],
+                    'B': ["Defansın sağında veya solunda oynayarak hücuma da destek veren oyuncular.", "Bek"],
+                    'C': ["Portekiz milli takım oyuncusu ...... Ronaldo", "Cristiano"],
+                    'Ç': ["Kale sahasının köşelerinden kaleye bakılan dar açı.", "Çapraz"],
+                    'D': ["Futbolda topu ayakla sürerek adam geçme, top sürme eyleminin İngilizcesi.", "Dribbling"],
+                    'E': ["Rakibi çalımla veya pasla oyundan düşürmek, saf dışı bırakmak.", "Ekarte"],
+                    'F': ["Sadece gol atmaya odaklanan, takımın en uçtaki hücum elemanı.", "Forvet"],
+                    'G': ["Altın golün yerine bir dönem uygulanan, uzatmanın ilk yarısı bittiğinde önde olanın maçı kazandığı kural.", "Gümüş"],
+                    'H': ["Gol atmak için tüm takımın planlı şekilde rakip sahaya yüklenmesi.", "Hücum"],
+                    'I': ["Oyuncunun topa vurmak isterken boşa sallaması ve topu ıskalaması.", "Iska"],
+                    'İ': ["Mersin şehrinin Süper Lig görmüş köklü futbol kulübü.", "İdmanyurdu"],
+                    'J': ["Efsaneleşmiş futbolcuların kariyerlerini sonlandırırken yaptıkları veda maçı.", "Jübile"],
+                    'K': ["Savunmada arkadaşının boşalttığı alanı doldurma hamlesi.", "Kademe"],
+                    'L': ["Futbolcuların resmi maçlara çıkabilmesi için federasyondan çıkarılan belge.", "Lisans"],
+                    'M': ["Futbolda topu iki ayak arasında sıkıştırıp atarak yapılan estetik çalım.", "Makas"],
+                    'N': ["Semih Şentürk'e sonradan oyuna girip attığı goller sebebiyle takılan lakap.", "Nöbetçi"],
+                    'O': ["Takımın oyun kurucusuna verilen diğer bir isim.", "Organizatör"],
+                    'Ö': ["Topun havada dönmeyip bir anda kaleye düşmesiyle bilinen frikik vuruş türü.", "Ölü"],
+                    'P': ["Penaltı atışında topun dibine yavaşça girilerek kalenin ortasına atılan meşhur vuruş stili.", "Panenka"],
+                    'R': ["'Şeytan' lakaplı, Fenerbahçe'nin efsanevi eski futbolcusu.", "Rıdvan"],
+                    'S': ["İleri uçta, ceza sahası içinde gol arayan merkezi forvet oyuncusu.", "Santrfor"],
+                    'Ş': ["Futbol maçlarının sonucunu önceden para veya menfaat karşılığı anlaşıp belirleme suçu.", "Şike"],
+                    'T': ["Ricardo Quaresma ile özdeşleşen, topa ayağın dışıyla yapılan falsolu vuruş.", "Trivela"],
+                    'U': ["Avrupa futbolunun en üst düzey yönetim organı.", "UEFA"],
+                    'Ü': ["21 yaş altı milli futbol takımlarına verilen isim.", "Ümit"],
+                    'V': ["İspanya takımı .", "Villarreal"],
+                    'Y': ["Trabzonspor'dan Lille'e transfer olan milli oyuncunun soyadı.", "Yazıcı"],
+                    'Z': ["Fatih Tekke'nin oynadığı rus takımı.", "Zenit"]
+                }
+            },
+            sanat: {
+                1: {
+                    'A': ["Tiyatro veya sinema eserlerinde rol alan erkek oyuncu.", "Aktör"],
+                    'B': ["Parmak uçlarında özel bir etekle yapılan klasik dans.", "Bale"],
+                    'C': ["Isıtılarak şekil verilen saydam veya yarı saydam kırılgan sanat materyali.", "Cam"],
+                    'Ç': ["Kağıt üzerine kalemle yapılan resim veya taslak eylemi.", "Çizim"],
+                    'D': ["Tiyatroda sahneyi konuya uygun olarak döşemek için kullanılan eşyaların tümü.", "Dekor"],
+                    'E': ["Suyun üzerine boya damlatılarak kağıda geçirilen geleneksel Türk sanatı.", "Ebru"],
+                    'F': ["Sinemada izlediğimiz hareketli görüntüler bütünü, sinema eseri.", "Film"],
+                    'G': ["Resimde ışığın vurmadığı karanlık yerler.", "Gölge"],
+                    'H': ["Taş, mermer veya çamuru yontarak yapılan üç boyutlu eser.", "Heykel"],
+                    'I': ["Sahnede oyuncuları aydınlatmak için kullanılan sistem.", "Işık"],
+                    'İ': ["Bir sanat eserini yaratırken sanatçıya gelen duygu veya yaratma gücü.", "İlham"],
+                    'J': ["Tiyatroda oyuncunun sözsüz olarak el ve kol ile yaptığı bedensel hareket.", "Jest"],
+                    'K': ["Şarkıları toplu halde söyleyen şarkıcılar grubu.", "Koro"],
+                    'L': ["Paris'te bulunan dünyanın en büyük sanat müzesi.", "Louvre"],
+                    'M': ["Tarihi ve sanatsal eserlerin sergilendiği yapı.", "Müze"],
+                    'N': ["Müziği kağıda dökmek için kullanılan işaretlerin her biri.", "Nota"],
+                    'O': ["Orkestra eşliğinde oynanan müzikli tiyatro eseri.", "Opera"],
+                    'Ö': ["Resim sanatında daha önce hiç yapılmamış, kopyası olmayan eserin niteliği.", "Özgün"],
+                    'P': ["Ressamların boyaları karıştırmak için kullandıkları üzerinde delik olan tahta veya plastik tepsi.", "Palet"],
+                    'R': ["Tuval veya kağıt üzerine boyalarla yapılan görsel eser.", "Resim"],
+                    'S': ["Tiyatro oyunlarının seyirci önünde oynandığı yüksek platform.", "Sahne"],
+                    'Ş': ["Dizeler halinde yazılan ve duyguları anlatan edebi sanat eseri.", "Şiir"],
+                    'T': ["Ressamların üzerine yağlı boya resim yaptıkları gerilmiş bez.", "Tuval"],
+                    'U': ["Sanatında en üst mertebeye ulaşmış bilgili sanatçı.", "Usta"],
+                    'Ü': ["Sanat dünyasında herkes tarafından tanınan, şöhretli kişi.", "Ünlü"],
+                    'V': ["İçine çiçek konulan dekoratif ve sanatsal kap.", "Vazo"],
+                    'Y': ["Bir edebi eseri kaleme alan sanatçı.", "Yazar"],
+                    'Z': ["El ustalığı gerektiren marangozluk, oymacılık gibi işlere verilen genel ad.", "Zanaat"]
+                },
+                2: {
+                    'A': ["Su bazlı olup çabuk kuruyan bir boya türü.", "Akrilik"],
+                    'B': ["17. yüzyılda doğan; şatafat, abartı ve kıvrımlı detayların hakim olduğu sanat akımı.", "Barok"],
+                    'C': ["Ahşap eserleri parlatmak için sürülen madde.", "Cila"],
+                    'Ç': ["Geleneksel Türk sanatında camilerde duvarları süsleyen fırınlanmış seramik levha.", "Çini"],
+                    'D': ["Metalin eritilip kalıplara dökülmesiyle yapılan heykel tekniği.", "Döküm"],
+                    'E': ["Resim veya mimaride eserin aslına geçmeden önce yapılan kaba taslak.", "Eskiz"],
+                    'F': ["Islak sıva üzerine kireçli su ile ezilmiş boyalarla yapılan duvar resmi.", "Fresk"],
+                    'G': ["Sanat eserlerinin alıcılara sergilendiği ve satıldığı sergi salonu.", "Galeri"],
+                    'H': ["Geleneksel sanatlarımızda güzel Arap harfleriyle yazı yazan usta.", "Hattat"],
+                    'I': ["Fresk sanatının temel özelliği olan sıvanın kurutulmamış hali.", "Islak"],
+                    'İ': ["Sanat eserinde zihinde canlandırılan sembolik hayal veya görüntü.", "İmge"],
+                    'J': ["Tiyatro ve sinemada başrol oynayan yakışıklı erkek oyunculara verilen isim.", "Jön"],
+                    'K': ["Batı müziğinde Beethoven ve Mozart gibi isimlerin temsil ettiği tarihi dönem.", "Klasik"],
+                    'L': ["Şiirde duygu ve coşkunun ön planda olduğu, adını bir çalgıdan alan tür.", "Lirik"],
+                    'M': ["Küçük renkli taş veya cam parçalarının yan yana dizilmesiyle oluşturulan eser.", "Mozaik"],
+                    'N': ["Konusu cansız nesneler (meyveler, çiçekler, eşyalar) olan tablo.", "Natürmort"],
+                    'O': ["Vurmalı, yaylı ve üflemeli çalgıların bir arada çaldığı büyük müzik topluluğu.", "Orkestra"],
+                    'Ö': ["Müzikte notaların ritmik olarak gruplara ayrıldığı her bir bölüm, mezür.", "Ölçü"],
+                    'P': ["Sadece insan yüzünü ve omuzlarını konu alan çizim veya fotoğraf.", "Portre"],
+                    'R': ["'Yeniden Doğuş' anlamına gelen, İtalya'da başlayan bilim ve sanat devrimi.", "Rönesans"],
+                    'S': ["Killi toprağın fırınlanmasıyla elde edilen sanat ürünleri.", "Seramik"],
+                    'Ş': ["Ressamların çalışırken tuvali üzerine yerleştirdikleri üç ayaklı ahşap destek.", "Şövale"],
+                    'T': ["Kitap sayfalarını altın tozu ve boyalarla süsleme sanatı.", "Tezhip"],
+                    'U': ["Sanat eserini oluşturan parçalar arasındaki estetik bütünlük ve ahenk.", "Uyum"],
+                    'Ü': ["Sanatçının eseri oluştururken kullandığı kendine has dili ve biçimi.", "Üslup"],
+                    'V': ["Renkli cam parçalarının kurşunla birleştirildiği süsleme sanatı.", "Vitray"],
+                    'Y': ["Heykelcilikte taş veya ahşabın şekillendirilerek oluşturulan üç boyutlu esere verilen diğer ad.", "Yontu"],
+                    'Z': ["Tabloda veya mimaride ana figürlerin arkasında kalan taban alanı.", "Zemin"]
+                },
+                3: {
+                    'A': ["Sanatta geleneksel kurallara karşı çıkarak yeni deneyler yapan öncü akım.", "Avangard"],
+                    'B': ["Sadece insan başı, boyun ve göğsünü gösteren yarım heykel.", "Büst"],
+                    'C': ["Türk sanat müziğinde kıvrak ve hareketli bir usül.", "Curcuna"],
+                    'Ç': ["Heykeltıraşların taşı şekillendirirken keskiyle birlikte kullandıkları vurma aleti.", "Çekiç"],
+                    'D': ["I. Dünya Savaşı yıllarında kuralları reddeden, absürtlüğü savunan sanat akımı.", "Dadaizm"],
+                    'E': ["Mekana özgü yaratılan ve izleyicinin de sanatın içinde yer aldığı çağdaş yerleştirme sanatı.", "Enstalasyon"],
+                    'F': ["Makineleşmeyi ve hızı yücelten 20. yüzyıl sanat akımı.", "Fütürizm"],
+                    'G': ["Ahşap veya metal plakalara kazınarak yapılan resmin kağıda basılması tekniği.", "Gravür"],
+                    'H': ["Heykel ve mimaride eserin uzayda kapladığı boşluk, kütle.", "Hacim"],
+                    'I': ["Perspektif çizerken tuvali eşit karelere bölmeye yarayan çizgi sistemi.", "Izgara"],
+                    'İ': ["Ortodoks kiliselerinde ahşap üzerine yapılmış kutsal kişi tasviri.", "İkon"],
+                    'J': ["Tiyatroda ve sanatta sanatçıların kendi aralarında kullandığı özel dil.", "Jargon"],
+                    'K': ["Parçaları motor veya rüzgar gücüyle hareket eden sanat eseri türü.", "Kinetik"],
+                    'L': ["Yağ ve suyun birbirini itmesi prensibine dayanan taş baskı tekniği.", "Litografi"],
+                    'M': ["Doğu sanatında ışık, gölge ve perspektif olmadan çizilen küçük boyutlu resim.", "Minyatür"],
+                    'N': ["Resim ve heykelde çıplak insan figürünü konu alan eser.", "Nü"],
+                    'O': ["Sanatçının kendi yüzünü çizdiği portre.", "Otoportre"],
+                    'Ö': ["Natürmort tablolarında vazonun veya meyvelerin altına serilen kumaş detay.", "Örtü"],
+                    'P': ["İki boyutlu yüzeye çizilen cisimlerin derinlik ve uzaklık hissi verecek şekilde resmedilmesi.", "Perspektif"],
+                    'R': ["Yüzey üzerine kabartma veya çökertme yapılarak oluşturulan eser.", "Rölyef"],
+                    'S': ["Salvador Dali ile özdeşleşen, bilinçaltı ve rüyaları konu alan gerçeküstücülük.", "Sürrealizm"],
+                    'Ş': ["Bir sanatçının en üstün, en kusursuz ve kalıcı eseri.", "Şaheser"],
+                    'T': ["Yan yana asılarak bir bütün oluşturan üç panodan oluşan resim.", "Triptik"],
+                    'U': ["Klasik Batı müziğinde notaları yarım ses uzatan işaretin Türkçedeki adı.", "Uzatma"],
+                    'Ü': ["Edebiyatta ve sanatta ulaşılamayacak kadar mükemmel, hayali toplum tasarımı.", "Ütopya"],
+                    'V': ["Süsleme sanatlarında objelerin üzerini kaplamak için kullanılan çok ince altın yaprak.", "Varak"],
+                    'Y': ["Sanatçının ilhamıyla sıfırdan meydana getirdiği eserin oluşum süreci.", "Yaratı"],
+                    'Z': ["Estetik ve güzelliği algılama, sanat eserinden keyif alma duygusu.", "Zevk"]
+                }
+            },
+            genel: {
+                1: {
+                    'A': ["Türkiye Büyük Millet Meclisi'nin bulunduğu başkentimiz.", "Ankara"],
+                    'B': ["Bir ülkenin bağımsızlığını simgeleyen kumaş sembol.", "Bayrak"],
+                    'C': ["İslam dininde ibadet edilen büyük yapı.", "Cami"],
+                    'Ç': ["Türkiye'de sabah kahvaltılarında en çok tüketilen sıcak içecek.", "Çay"],
+                    'D': ["Üzerinde yaşadığımız ve Güneş sisteminde bulunan gezegen.", "Dünya"],
+                    'E': ["Newton'un kafasına düşerek yerçekimini bulmasını sağladığı söylenen meyve.", "Elma"],
+                    'F': ["Bilgisayarı kontrol etmemizi sağlayan donanımın Türkçe karşılığı.", "Fare"],
+                    'G': ["Sabah doğup akşam batan, Dünya'nın ısı ve ışık kaynağı olan yıldız.", "Güneş"],
+                    'H': ["İnsanların tedavi olmak amacıyla başvurdukları sağlık kurumu.", "Hastane"],
+                    'I': ["Nehirlerin diğer adı, büyük akarsu.", "Irmak"],
+                    'İ': ["Düşünen, konuşan ve medeniyet kuran canlı türü.", "İnsan"],
+                    'J': ["Başkenti Tokyo olan ve Asya'nın doğusunda yer alan ada ülkesi.", "Japonya"],
+                    'K': ["Yeryüzündeki altı büyük kara parçasından her birine verilen ad.", "Kıta"],
+                    'L': ["Türkiye'nin resmi para birimi.", "Lira"],
+                    'M': ["Güneş sisteminde Kızıl Gezegen olarak bilinen yer.", "Mars"],
+                    'N': ["Bir ülke, şehir veya bölgede yaşayan insanların toplam sayısı.", "Nüfus"],
+                    'O': ["Kıtaları birbirinden ayıran çok büyük deniz kütlesi.", "Okyanus"],
+                    'Ö': ["Suda yüzebilen, vak vak diye ses çıkaran perde ayaklı kuş.", "Ördek"],
+                    'P': ["Mal ve hizmet satın almak için kullanılan kağıt veya madeni değişim aracı.", "Para"],
+                    'R': ["Kırmızı, mavi ve sarı gibi gözün ışığı algılama biçimlerine verilen genel ad.", "Renk"],
+                    'S': ["H2O formülüne sahip, yaşam için en temel sıvı.", "Su"],
+                    'Ş': ["Nüfusu kalabalık olan, ticaret ve sanayinin geliştiği büyük yerleşim yeri.", "Şehir"],
+                    'T': ["Geçmişte yaşanan olayları neden-sonuç ilişkisi içinde inceleyen bilim.", "Tarih"],
+                    'U': ["Gökyüzünde yolcu veya yük taşımak için kullanılan motorlu hava taşıtı.", "Uçak"],
+                    'Ü': ["Sınırları belli olan ve bir devletin egemenliğindeki toprakların tümü, devlet.", "Ülke"],
+                    'V': ["Bir ilin yönetiminden sorumlu en yetkili devlet görevlisi.", "Vali"],
+                    'Y': ["Okulların uzun tatile girdiği, denize girilen en sıcak mevsim.", "Yaz"],
+                    'Z': ["Geçmişten geleceğe doğru ilerleyen kesintisiz süreç, vakit.", "Zaman"]
+                },
+                2: {
+                    'A': ["Dünyayı çepeçevre saran gaz tabakası.", "Atmosfer"],
+                    'B': ["Bir ülkenin devlet yönetim merkezinin bulunduğu şehir.", "Başkent"],
+                    'C': ["Yeryüzünün iklimini, şeklini ve yaşamını inceleyen bilim dalı.", "Coğrafya"],
+                    'Ç': ["Demir ve karbonun alaşımıyla elde edilen, inşaatlarda kullanılan dayanıklı metal.", "Çelik"],
+                    'D': ["Yer kabuğundaki fay hatlarının kırılmasıyla oluşan sarsıntı.", "Deprem"],
+                    'E': ["Dünyayı kuzey ve güney yarımküre olarak iki eşit parçaya bölen hayali çizgi.", "Ekvator"],
+                    'F': ["Milyonlarca yıl toprak altında kalarak taşlaşmış bitki ve hayvan kalıntısı.", "Fosil"],
+                    'G': ["Güneşin etrafında belirli bir yörüngede dönen gök cismi.", "Gezegen"],
+                    'H': ["Yeryüzünün belli bir oranda küçültülerek kağıda çizilmiş hali.", "Harita"],
+                    'I': ["Termometre ile ölçülen, maddelerin sıcaklık durumu.", "Isı"],
+                    'İ': ["Bir bölgede uzun yıllar boyunca gözlemlenen hava olaylarının ortalaması.", "İklim"],
+                    'J': ["Yerkürenin yapısını ve oluşumunu inceleyen yer bilimi.", "Jeoloji"],
+                    'K': ["Dünyanın en kuzey ve en güney uçlarında yer alan buzullarla kaplı noktalar.", "Kutup"],
+                    'L': ["Gemilerin yük ve yolcu indirip bindirmek için yanaştıkları kıyı tesisi.", "Liman"],
+                    'M': ["Kutup noktalarını birleştiren ve yeryüzünü dik kestiği varsayılan hayali çizgiler.", "Meridyen"],
+                    'N': ["Genel kültürde büyük akarsu.", "Nehir"],
+                    'O': ["Ağaçların çok sık ve geniş alan kapladığı oksijen deposu alanlar.", "Orman"],
+                    'Ö': ["Toplumda yasalarla belirlenmemiş ancak herkesin uyduğu yazısız kural ve gelenek.", "Örf"],
+                    'P': ["Kuzeyi gösteren manyetik iğnesiyle yön bulmaya yarayan alet.", "Pusula"],
+                    'R': ["Elektromanyetik dalgalarla sesi uzaklara ileten iletişim cihazı.", "Radyo"],
+                    'S': ["İki komşu ülkeyi birbirinden ayıran coğrafi çizgi veya hat.", "Sınır"],
+                    'Ş': ["Akarsuların yüksekten dökülmesiyle oluşan çağlayan.", "Şelale"],
+                    'T': ["Toprağı işleyerek ürün elde etme faaliyeti, ziraat.", "Tarım"],
+                    'U': ["Atmosferin dışında kalan ve tüm gök cisimlerini barındıran sonsuzluk.", "Uzay"],
+                    'Ü': ["Liseden sonra gidilen yükseköğretim kurumu.", "Üniversite"],
+                    'V': ["Akarsuların yeri aşındırmasıyla oluşan 'U' veya 'V' şeklindeki derin çukur bölge.", "Vadi"],
+                    'Y': ["Üç tarafı sularla çevrili olan, bir tarafı karaya bağlı coğrafi şekil.", "Yarımada"],
+                    'Z': ["Bitkisel ve hayvansal üretim yapma işi, tarım kelimesinin eş anlamlısı.", "Ziraat"]
+                },
+                3: {
+                    'A': ["Dünyanın en güneyinde bulunan ve üzerinde ülke bulunmayan buzul kıta.", "Antarktika"],
+                    'B': ["Canlıların yapısını, gelişimini ve yaşam süreçlerini inceleyen bilim dalı.", "Biyoloji"],
+                    'C': ["Akdeniz ile Atlas Okyanusu'nu birbirine bağlayan stratejik boğaz.", "Cebelitarık"],
+                    'Ç': ["Yıllık yağış miktarının çok düşük olduğu, bitki örtüsü bulunmayan kurak alanlar.", "Çöl"],
+                    'D': ["Kuvvet ölçmeye yarayan, yaylı tartı prensibiyle çalışan alet.", "Dinamometre"],
+                    'E': ["Ekvator'a paralel olarak çizildiği varsayılan hayali çemberler.", "Enlem"],
+                    'F': ["Sokrates, Platon ve Kant gibi düşünürlerin genel mesleki unvanı.", "Filozof"],
+                    'G': ["Milyarlarca yıldız, gaz ve toz bulutundan oluşan devasa sistem, gökada.", "Galaksi"],
+                    'H': ["Antik Mısır'da kullanılan resimli yazı sistemi.", "Hiyeroglif"],
+                    'I': ["Radyoaktif maddelerin veya güneşin yaydığı enerji akımı, radyasyon.", "Işıma"],
+                    'İ': ["Atmosferin radyo dalgalarını yansıtan ve haberleşmeyi sağlayan üst katmanı.", "İyonosfer"],
+                    'J': ["Güneş sisteminin en büyük ve en kütleli gaz devi gezegeni.", "Jüpiter"],
+                    'K': ["Yanardağların ağız kısmında veya göktaşı düşmesiyle oluşan çukur.", "Krater"],
+                    'L': ["Üzerinde yaşadığımız yer kabuğunun bilimsel ve coğrafi adı, taşküre.", "Litosfer"],
+                    'M': ["Yerkabuğunun altında bulunan, yanardağlardan fışkıran erimiş sıcak kayaç hamuru.", "Magma"],
+                    'N': ["Atom çekirdeğinde bulunan yüksüz parçacık.", "Nötron"],
+                    'O': ["Atmosferde bulunan ve güneşin zararlı ultraviyole ışınlarını süzen gaz tabakası.", "Ozon"],
+                    'Ö': ["Bir maddenin birim hacminin kütlesine (yoğunluğuna) verilen teknik ad.", "Özgülkütle"],
+                    'P': ["Fosilleri inceleyerek geçmiş jeolojik çağlardaki yaşamı araştıran bilim dalı.", "Paleontoloji"],
+                    'R': ["15. yüzyılda Avrupa'da bilim ve sanatta aydınlanmanın yaşandığı 'Yeniden Doğuş' dönemi.", "Rönesans"],
+                    'S': ["Depremlerin büyüklüğünü ve merkez üssünü kaydeden sarsıntıölçer alet.", "Sismograf"],
+                    'Ş': ["Eski Türklerin de benimsediği, doğadaki ruhlara ve şifacılara inanan inanç sistemi.", "Şamanizm"],
+                    'T': ["Uzaydaki gök cisimlerini gözlemlemek için kullanılan aynalı/mercekli cihaz.", "Teleskop"],
+                    'U': ["Gezegenlerin etrafında belirli bir yörüngede dönen doğal gök cisimleri.", "Uydular"],
+                    'Ü': ["Gerçekleşmesi imkansız olan, sadece zihinlerde tasarlanan ideal toplum düzeni.", "Ütopya"],
+                    'V': ["İçinden lav ve kül püskürten, yer kabuğundaki çatlaklarla oluşan dağ, yanardağ.", "Volkan"],
+                    'Y': ["Bir gök cisminin başka bir gök cismi etrafında dönerken izlediği yol.", "Yörünge"],
+                    'Z': ["Yeşil renkte, çok değerli ve sert bir süs taşı.", "Zümrüt"]
+                }
+            },
+            edebiyat: {
+                1: {
+                    'A': ["Yazılışları farklı olsa da aynı manaya gelen kelimelere verilen isim.", "Anlamdaş"],
+                    'B': ["Bir yazarın kitabının matbaada çoğaltılması işlemi.", "Basım"],
+                    'C': ["Kelimelerin yan yana gelerek oluşturduğu anlamlı yargı, tümce.", "Cümle"],
+                    'Ç': ["Bir dilde yazılmış eseri başka bir dile aktarma işi.", "Çeviri"],
+                    'D': ["Şiirde her bir satıra verilen isim, mısra.", "Dize"],
+                    'E': ["Sanatçıların ortaya koyduğu roman, şiir veya tablo gibi ürünlerin genel adı.", "Eser"],
+                    'F': ["Nasreddin Hoca'nın güldürürken düşündüren kısa anlatılarına verilen ad.", "Fıkra"],
+                    'G': ["Kompozisyon veya kitapta asıl konuya geçilmeden önceki ilk bölüm.", "Giriş"],
+                    'H': ["Alfabeyi oluşturan seslerin yazılı dildeki işaretlerinden her biri.", "Harf"],
+                    'I': ["Ünlü 'Hababam Sınıfı' eserinin yazarı olan Rıfat'ın soyadı.", "Ilgaz"],
+                    'İ': ["Varlıkları karşılayan kelime türü, ad.", "İsim"],
+                    'J': ["Edebiyat yarışmalarında eserleri değerlendiren hakem heyeti.", "Jüri"],
+                    'K': ["Yazarın düşüncelerini veya kurgusunu kağıda döküp kapaklayarak bastırdığı ürün.", "Kitap"],
+                    'L': ["Aşk ve duygusal konuların işlendiği coşkulu şiir türü.", "Lirik"],
+                    'M': ["Cinlerin, perilerin ve devlerin olduğu olağanüstü olayları anlatan halk öyküsü.", "Masal"],
+                    'N': ["Tamamlanmış cümlelerin sonuna konulan noktalama işareti.", "Nokta"],
+                    'O': ["Roman ve hikayelerde kahramanların başından geçen durum.", "Olay"],
+                    'Ö': ["Bir romanın veya hikayenin konusunu kısaca anlatan metin.", "Özet"],
+                    'P': ["Şiirde kıra, çobana ve köy hayatına dair yazılan şiir türü.", "Pastoral"],
+                    'R': ["Olayların, mekanın ve kişilerin geniş anlatıldığı uzun edebi metin.", "Roman"],
+                    'S': ["Kelimelerin anlamlarını açıklayan kalın başvuru kitabı.", "Sözlük"],
+                    'Ş': ["Duyguları ahenkli kelimelerle kağıda döken kişi.", "Şair"],
+                    'T': ["Bir edebi eserin merkezinde yer alan temel düşünce, ana fikir.", "Tema"],
+                    'U': ["Şiirde dize sonlarındaki ses benzerliği, kafiyenin diğer adı.", "Uyak"],
+                    'Ü': ["Şaşma, korku, heyecan gibi duyguları belirten kelimelerin sonuna konan işaret.", "Ünlem"],
+                    'V': ["Eş görevli kelimeleri ayırmak için kullanılan noktalama işareti.", "Virgül"],
+                    'Y': ["Edebi metinleri kaleme alan kişi, müellif.", "Yazar"],
+                    'Z': ["Anlam olarak birbirinin tam tersi olan sözcükler.", "Zıt"]
+                },
+                2: {
+                    'A': ["Divan edebiyatında şiirlerin yazıldığı ahenkli ölçü sistemi.", "Aruz"],
+                    'B': ["Ünlü bir kişinin hayatının başkası tarafından anlatıldığı eser türü.", "Biyografi"],
+                    'C': ["Yazılışları aynı, anlamları farklı olan sesteş kelimelerle yapılan uyak türü.", "Cinas"],
+                    'Ç': ["Şiirde birinci dizeyle üçüncü dizenin kafiyeli olduğu uyak örgüsü.", "Çapraz"],
+                    'D': ["Yazarın herhangi bir konudaki kişisel görüşlerini kanıtlama amacı gütmeden yazdığı yazı.", "Deneme"],
+                    'E': ["Kahramanlık, savaş ve destan konularını işleyen şiir türü.", "Epik"],
+                    'F': ["Hayvanların insan gibi konuşturulduğu, sonunda ahlaki ders veren kısa öyküler.", "Fabl"],
+                    'G': ["Divan edebiyatında ilk beyti kendi arasında kafiyeli, aşk ve şarap şiiri.", "Gazel"],
+                    'H': ["Türk halk şiirinde kelimelerin hece sayılarının eşitliğine dayanan ölçü.", "Hece"],
+                    'I': ["Romantizm akımı şairlerinde çokça görülen derin manevi acı, keder.", "Iztırap"],
+                    'İ': ["Şairin kelimelerle zihinde canlandırdığı yeni, hayali resimler veya semboller.", "İmge"],
+                    'J': ["Yazarın günü gününe tuttuğu ve edebiyat dünyasını anlattığı edebi günlük.", "Jurnal"],
+                    'K': ["Şiirde mısra sonlarında bulunan sözcük veya ek benzerliği.", "Kafiye"],
+                    'L': ["Eskiden sözlüklere verilen edebi ve Osmanlıca isim.", "Lugat"],
+                    'M': ["Bilgi vermek ve kanıtlamak amacıyla gazetelerde yazılan bilimsel ağırlıklı yazı.", "Makale"],
+                    'N': ["Şiir formunda, ölçülü ve kafiyeli yazılmış eserlere verilen genel ad.", "Nazım"],
+                    'O': ["Halk edebiyatında bağlama çalarak şiir söyleyen kişi, aşık.", "Ozan"],
+                    'Ö': ["Kitabın başında yazarın eserin yazılış amacını anlattığı ilk bölüm.", "Önsöz"],
+                    'P': ["Romanda veya tiyatroda olayların öncesini anlatan giriş bölümü.", "Prolog"],
+                    'R': ["Şiirde dize sonlarında kafiyeden sonra gelen ve anlamı aynı olan ek veya kelime tekrarı.", "Redif"],
+                    'S': ["Edebiyatın kelimelerle yapılan estetik ve yaratıcı yönü.", "Sanat"],
+                    'Ş': ["Bir yazarın ustalığını gösteren, edebiyat tarihine geçen mükemmel eseri.", "Şaheser"],
+                    'T': ["Halk edebiyatında toplumun veya kişilerin aksayan yönlerini eleştiren şiir türü.", "Taşlama"],
+                    'U': ["Mısra sonlarında kafiyesi olan şiirlere verilen sıfat.", "Uyaklı"],
+                    'Ü': ["Şiirde seslenme, hitap ve coşku bildiren söz sanatı, nida.", "Ünlem"],
+                    'V': ["Şiirdeki aruz veya hece ölçüsünün edebiyattaki diğer ve eski adı.", "Vezin"],
+                    'Y': ["Divan edebiyatında bir kişiyi veya durumu eleştirmek için yazılan hiciv şiiri.", "Yergi"],
+                    'Z': ["Şiirde dize sonlarında en az üç ses benzerliğiyle oluşan kafiye türü.", "Zengin"]
+                },
+                3: {
+                    'A': ["Soyut kavramların somut varlıklar gibi canlandırılarak anlatıldığı sembolik anlatım.", "Alegori"],
+                    'B': ["Eserin sonunda yazarın yararlandığı kaynakları gösteren kitaplar listesi.", "Bibliyografya"],
+                    'C': ["Saz şairlerinin şiirlerini topladıkları, aşağıdan yukarıya açılan deri kaplı defter.", "Cönk"],
+                    'Ç': ["Olaydan çok duruma ağırlık veren, kesit öyküsü de denilen Rus kökenli hikaye türü.", "Çehov"],
+                    'D': ["Osmanlı dönemi şairlerinin şiirlerini aruzla yazdıkları ve topladıkları kitabın ve edebiyatın adı.", "Divan"],
+                    'E': ["Bir edebi eserin olumlu ve olumsuz yönlerini ortaya koyan inceleme yazısı, tenkit.", "Eleştiri"],
+                    'F': ["Divan şiirinde şairlerin sıklıkla şikayet ettiği, dönen gökyüzü ve talih.", "Felek"],
+                    'G': ["Edebiyatta gülünç, tuhaf ve korkunç ögelerin uyumsuz bir şekilde birleştiği tarz.", "Grotesk"],
+                    'H': ["Divan edebiyatında kişilerin eksikliklerini ve kusurlarını alaycı bir dille yeren şiir türü.", "Hiciv"],
+                    'I': ["Tanzimat Edebiyatı'nın zeminini hazırlayan ve 1856'da ilan edilen Osmanlı fermanı.", "Islahat"],
+                    'İ': ["Bir sözcüğü benzetme amacıyla başka bir sözcüğün yerine kullanma sanatı, eğretileme.", "İstiare"],
+                    'J': ["Belirli bir topluluğun veya mesleğin edebiyatta da kullandığı kendine has anlaşılmaz dil.", "Jargon"],
+                    'K': ["Aşık edebiyatında hece ölçüsünün 11'lisi ile yazılan, en yaygın şiir biçimi.", "Koşma"],
+                    'L': ["Divan edebiyatında fıkraların ve güldürücü kısa öykülerin toplandığı eser, latifeler.", "Letaif"],
+                    'M': ["Her beyti kendi içinde kafiyeli olan, divan edebiyatının en uzun şiir türü.", "Mesnevi"],
+                    'N': ["Emile Zola'nın kurucusu olduğu, çevrenin insan üzerindeki etkisini deney gibi anlatan akım.", "Natüralizm"],
+                    'O': ["Yazarın kendi yaşam öyküsünü bizzat kendisinin kaleme aldığı edebi eser.", "Otobiyografi"],
+                    'Ö': ["Antik tiyatroda koro çıkmadan önce oyunun konusunu açıklayan ilk replik veya bölüm.", "Öndeyiş"],
+                    'P': ["Parnasisizm akımına bağlı olan ve 'şiirde gerçekçiliği' savunan şair.", "Parnasyen"],
+                    'R': ["Edebiyatımızda Ömer Hayyam ile özdeşleşen, dört dizelik felsefi şiir biçimi.", "Rubai"],
+                    'S': ["İki dörtlük ve iki üçlükten oluşan, İtalyan kökenli 14 dizelik lirik şiir biçimi.", "Sone"],
+                    'Ş': ["Divan edebiyatına Türklerin kazandırdığı, bestelenmek için yazılan dörtlüklerden oluşan nazım biçimi.", "Şarkı"],
+                    'T': ["Aralarında ilgi bulunan iki kavramdan zayıf olanı güçlü olana benzetme sanatı.", "Teşbih"],
+                    'U': ["Şiir okurken ünsüzle biten kelimeyi ünlüyle başlayan kelimeye bağlayarak okuma kuralı.", "Ulama"],
+                    'Ü': ["Edebiyatta bir eserin oluşturduğu ün, şöhret.", "Ün"],
+                    'V': ["Şiirde mısraların hece veya aruz kalıplarına göre düzenlendiği ölçü.", "Vezin"],
+                    'Y': ["Modern edebiyatta bireyin topluma, kendine ve değerlere yabancı hissetmesi teması.", "Yabancılaşma"],
+                    'Z': ["Bir edebi eserin yazıldığı dönemin sosyal, siyasal ve kültürel algılayış biçimlerinin bütünü.", "Zihniyet"]
+                }
+            }
+        };
+
+        // Otomatik joker soru üreteci (Eksik soruları tamamlar, oyun kilitlenmez)
+        function generateQuestions(category, level) {
+            return letters.map(l => {
+                if (questionDB[category] && questionDB[category][level] && questionDB[category][level][l]) {
+                    return { letter: l, q: questionDB[category][level][l][0], a: questionDB[category][level][l][1] };
+                }
+                return { letter: l, q: `${categoryNames[category]} alanında '${l}' ile başlayan terim?`, a: l.toLocaleLowerCase('tr-TR') };
+            });
+        }
+
+        // --- İLERLEME SİSTEMİ ---
+        let userProgress = JSON.parse(localStorage.getItem('pasaparolaProgress')) || { futbol: 1, sanat: 1, genel: 1, edebiyat: 1 };
+        let userScores = JSON.parse(localStorage.getItem('pasaparolaScores')) || {};
+        let username = localStorage.getItem('pasaparolaUsername') || '';
+
+        function saveProgress() { localStorage.setItem('pasaparolaProgress', JSON.stringify(userProgress)); }
+        function saveScores() { localStorage.setItem('pasaparolaScores', JSON.stringify(userScores)); }
+
+        function updateMenuUI() {
+            document.getElementById('displayUsername').textContent = username;
+            const cats = ['futbol', 'sanat', 'genel', 'edebiyat'];
+            cats.forEach(c => {
+                const badge = document.getElementById(`lvl-${c}`);
+                if (!badge) return;
+                
+                if (userProgress[c] > 3) {
+                    badge.textContent = "Tamamlandı";
+                    badge.className = "text-xs font-bold bg-emerald-500 text-white px-2.5 py-1 rounded-full shadow-md";
+                } else {
+                    badge.textContent = `Seviye ${userProgress[c]}`;
+                    badge.className = "text-xs font-bold bg-blue-500/50 text-blue-100 border border-blue-400/30 px-2.5 py-1 rounded-full";
+                }
+            });
+        }
+
+        // Ekran Yönetimi
+        const screens = {
+            menu: document.getElementById('menuScreen'),
+            level: document.getElementById('levelScreen'),
+            game: document.getElementById('gameScreen'),
+            end: document.getElementById('endScreen'),
+            profile: document.getElementById('profileScreen'),
+            leaderboard: document.getElementById('leaderboardScreen')
+        };
+        
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => {
+                if(s) {
+                    s.classList.remove('visible');
+                    setTimeout(() => s.style.display = 'none', 300); 
+                }
+            });
+            setTimeout(() => {
+                if(screens[screenName]) {
+                    screens[screenName].style.display = 'flex';
+                    void screens[screenName].offsetWidth;
+                    screens[screenName].classList.add('visible');
+                }
+            }, 300);
+        }
+
+        window.saveUsername = function() {
+            const input = document.getElementById('usernameInput').value.trim();
+            if(input.length < 2) return;
+            username = input;
+            localStorage.setItem('pasaparolaUsername', username);
+            updateMenuUI();
+            showScreen('menu');
+        }
+
+        if(!username) {
+            showScreen('profile');
+        } else {
+            showScreen('menu');
+            updateMenuUI();
+        }
+
+        window.returnToMenu = function() { 
+            updateMenuUI();
+            showScreen('menu'); 
+        }
+
+        window.returnToLevels = function() {
+            if (currentCategory) {
+                openLevelScreen(currentCategory);
+            } else {
+                returnToMenu();
+            }
+        }
+
+        window.openLevelScreen = function(categoryKey) {
+            currentCategory = categoryKey;
+            document.getElementById('levelScreenTitle').textContent = categoryNames[categoryKey];
+            
+            const maxLevel = 3;
+            const progress = userProgress[categoryKey];
+            const container = document.getElementById('levelButtonsContainer');
+            container.innerHTML = '';
+            
+            for(let i = 1; i <= maxLevel; i++) {
+                const btn = document.createElement('button');
+                if (i < progress) {
+                    btn.className = 'w-full py-4 rounded-2xl text-xl font-bold flex items-center justify-between px-8 bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg active:scale-95 transition-all';
+                    btn.innerHTML = `<span>Seviye ${i}</span> <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>`;
+                    btn.onclick = () => window.startGame(categoryKey, i);
+                } else if (i === progress) {
+                    btn.className = 'w-full py-4 rounded-2xl text-xl font-bold flex items-center justify-between px-8 bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white shadow-lg shadow-blue-500/40 active:scale-95 transition-all ring-2 ring-white/20';
+                    btn.innerHTML = `<span>Seviye ${i}</span> <span class="text-sm font-bold bg-black/30 px-3 py-1.5 rounded-lg border border-white/20 shadow-inner">Şimdi Oyna</span>`;
+                    btn.onclick = () => window.startGame(categoryKey, i);
+                } else {
+                    btn.className = 'w-full py-4 rounded-2xl text-xl font-bold flex items-center justify-between px-8 bg-black/40 text-gray-500 cursor-not-allowed border border-white/5';
+                    btn.innerHTML = `<span>Seviye ${i}</span> <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>`;
+                    btn.disabled = true;
+                }
+                container.appendChild(btn);
+            }
+            showScreen('level');
+        }
+
+        // --- OYUN DEĞİŞKENLERİ VE DÖNGÜ ---
+        let currentCategory = '';
+        let currentLevel = 1;
+        let questions = [];
+        let status = []; // 0: boş, 1: doğru, 2: pas
+        let currentIndex = 0;
+        let isGameActive = false;
+        
+        let timeElapsed = 0; 
+        let timerInterval;
+
+        const circleContainer = document.getElementById('circleContainer');
+        const answerInput = document.getElementById('answerInput');
+        const questionTextEl = document.getElementById('questionText');
+        const currentLetterBadge = document.getElementById('currentLetterBadge');
+
+        window.quitGame = function() {
+            isGameActive = false;
+            clearInterval(timerInterval);
+            openLevelScreen(currentCategory);
+        }
+
+        window.startGame = function(categoryKey, level = 1) {
+            currentCategory = categoryKey;
+            currentLevel = level;
+            
+            document.getElementById('uiCategoryName').textContent = `${categoryNames[categoryKey]} - Lvl ${currentLevel}`;
+            questions = generateQuestions(categoryKey, currentLevel);
+            status = new Array(questions.length).fill(0);
+            currentIndex = 0;
+            isGameActive = true;
+            
+            timeElapsed = 0; 
+            updateTimerUI();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                updateTimerUI();
+            }, 1000);
+
+            buildCircle();
+            updateUI();
+            showScreen('game');
+            
+            setTimeout(() => {
+                answerInput.focus();
+                loadQuestion(currentIndex);
+            }, 600);
+        }
+
+        function updateTimerUI() {
+            const mins = Math.floor(timeElapsed / 60).toString().padStart(2, '0');
+            const secs = (timeElapsed % 60).toString().padStart(2, '0');
+            const timerEl = document.getElementById('gameTimer');
+            timerEl.textContent = `${mins}:${secs}`;
+        }
+
+        window.nextLevel = function() { window.startGame(currentCategory, currentLevel + 1); }
+        window.retryLevel = function() { window.startGame(currentCategory, currentLevel); }
+
+        function buildCircle() {
+            circleContainer.innerHTML = '';
+            const containerWidth = circleContainer.offsetWidth || 340;
+            const radius = (containerWidth / 2) - 20; 
+            const centerX = containerWidth / 2; 
+            const centerY = containerWidth / 2;
+
+            letters.forEach((letter, i) => {
+                const angle = (i / letters.length) * (2 * Math.PI) - (Math.PI / 2); 
+                const node = document.createElement('div');
+                node.className = `letter-node`;
+                node.id = `node-${i}`;
+                node.textContent = letter;
+                node.style.left = `${centerX + radius * Math.cos(angle)}px`;
+                node.style.top = `${centerY + radius * Math.sin(angle)}px`;
+                circleContainer.appendChild(node);
+            });
+        }
+
+        function loadQuestion(index) {
+            if(!isGameActive) return;
+            for(let i=0; i<letters.length; i++) {
+                const node = document.getElementById(`node-${i}`);
+                if(node) {
+                    node.className = 'letter-node'; 
+                    if (status[i] === 1) node.classList.add('correct');
+                    else if (status[i] === 2) node.classList.add('passed');
+                    if (i === index) node.classList.add('active');
+                }
+            }
+            const q = questions[index];
+            currentLetterBadge.textContent = q.letter;
+            questionTextEl.innerHTML = q.q;
+            answerInput.value = '';
+            answerInput.focus();
+        }
+
+        function normalizeString(str) {
+            return str.replace(/İ/g, 'i').replace(/I/g, 'ı').toLocaleLowerCase('tr-TR').trim().replace(/\s+/g, ' ');
+        }
+
+        window.handleAnswer = function() {
+            if(!isGameActive) return;
+            const userAns = normalizeString(answerInput.value);
+            if(userAns === '') { triggerWrongAnimation(); return; }
+
+            if (userAns === normalizeString(questions[currentIndex].a)) {
+                status[currentIndex] = 1; 
+                checkWinCondition();
+            } else {
+                triggerWrongAnimation();
+            }
+        }
+
+        function triggerWrongAnimation() {
+            answerInput.classList.remove('error-shake');
+            void answerInput.offsetWidth; 
+            answerInput.classList.add('error-shake');
+            setTimeout(() => answerInput.classList.remove('error-shake'), 400);
+        }
+
+        window.handlePass = function() {
+            if(!isGameActive) return;
+            status[currentIndex] = 2; 
+            advanceToNext();
+        }
+
+        function checkWinCondition() {
+            if (status.every(s => s === 1)) endGame(true);
+            else advanceToNext();
+        }
+
+        function advanceToNext() {
+            updateUI();
+            let nextIndex = currentIndex + 1;
+            let found = false;
+            for (let i = nextIndex; i < questions.length; i++) {
+                if (status[i] === 0 || status[i] === 2) { currentIndex = i; found = true; break; }
+            }
+            if (!found) {
+                for (let i = 0; i < currentIndex; i++) {
+                    if (status[i] === 0 || status[i] === 2) { currentIndex = i; found = true; break; }
+                }
+            }
+            if (found) loadQuestion(currentIndex);
+        }
+
+        function updateUI() {
+            const remaining = status.filter(s => s === 0 || s === 2).length;
+            document.getElementById('uiRemaining').textContent = `${remaining} Kaldı`;
+        }
+
+        async function endGame(isWin) {
+            if(!isGameActive) return;
+            isGameActive = false;
+            clearInterval(timerInterval);
+            
+            let cCount = status.filter(s => s === 1).length;
+            let pCount = status.filter(s => s === 2).length;
+            let eCount = status.filter(s => s === 0).length;
+
+            document.getElementById('correctCount').textContent = cCount;
+            document.getElementById('passCount').textContent = pCount;
+            document.getElementById('emptyCount').textContent = eCount;
+            
+            const titleEl = document.getElementById('endTitle');
+            const msgEl = document.getElementById('endMessage');
+            const btnNext = document.getElementById('btnNextLevel');
+            const btnRetry = document.getElementById('btnRetry');
+            
+            const scoreContainer = document.getElementById('scoreContainer');
+            const finalScoreEl = document.getElementById('finalScore');
+            const scoreDetail = document.getElementById('scoreDetail');
+            
+            let finalScore = 0;
+
+            if (isWin) {
+                titleEl.textContent = "TEBRİKLER!";
+                titleEl.className = "text-4xl font-black mb-2 text-emerald-400 drop-shadow-md";
+                
+                const baseScore = cCount * 10;
+                const timeBonus = Math.max(0, (300 - timeElapsed) * 3); 
+                finalScore = baseScore + timeBonus;
+                
+                if (!userScores[currentCategory]) userScores[currentCategory] = {};
+                let prevBest = userScores[currentCategory][currentLevel] || 0;
+                let scoreDiff = finalScore - prevBest;
+                
+                if (scoreDiff > 0) {
+                    userScores[currentCategory][currentLevel] = finalScore;
+                    saveScores();
+                    scoreDetail.innerHTML = `${baseScore} D. Puanı + ${timeBonus} Hız Bonusu <br><span class="text-emerald-300 font-bold mt-1 inline-block">Yeni Rekor! (+${scoreDiff} Genel Puana Eklendi)</span>`;
+                } else {
+                    scoreDetail.innerHTML = `${baseScore} D. Puanı + ${timeBonus} Hız Bonusu <br><span class="text-gray-300 font-bold mt-1 inline-block">Mevcut rekorunu (${prevBest}) geçemedin.</span>`;
+                }
+                
+                scoreContainer.classList.remove('hidden');
+                finalScoreEl.textContent = finalScore;
+
+                if (currentLevel === userProgress[currentCategory] && currentLevel <= 3) {
+                    userProgress[currentCategory]++;
+                    saveProgress();
+                }
+
+                if (currentLevel >= 3) {
+                    msgEl.textContent = `Muazzam! Kategorideki TÜM seviyeleri bitirdin!`;
+                    btnNext.classList.add('hidden');
+                    btnRetry.classList.remove('hidden');
+                } else {
+                    msgEl.textContent = `Seviye ${currentLevel} başarıyla tamamlandı.`;
+                    btnNext.classList.remove('hidden');
+                    btnRetry.classList.remove('hidden');
+                }
+            } 
+
+            showScreen('end');
+            
+            // Buluta Kaydet (Toplam Puan)
+            if (isWin && isFirebaseActive && currentUserId) {
+                let totalGlobalScore = 0;
+                Object.keys(userScores).forEach(cat => {
+                    Object.keys(userScores[cat]).forEach(lvl => {
+                        totalGlobalScore += userScores[cat][lvl];
+                    });
+                });
+
+                try {
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'pasaparola-game';
+                    const ref = doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', currentUserId);
+                    await setDoc(ref, {
+                        userId: currentUserId,
+                        username: username,
+                        score: totalGlobalScore,
+                        date: Date.now()
+                    }, { merge: true });
+                } catch(e) { console.error("Skor kaydedilemedi", e); }
+            }
+        }
+
+        window.showLeaderboard = async function() {
+            showScreen('leaderboard');
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '<div class="text-center text-gray-400 mt-10 animate-pulse font-bold">Skorlar Yükleniyor...</div>';
+            
+            if(!isFirebaseActive) {
+                list.innerHTML = '<div class="text-center text-red-400 mt-10 p-4 bg-red-900/20 rounded-xl font-bold">Liderlik tablosu için Bulut bağlantısı (Firebase Config) gerekiyor. Kodu düzenleyip ayarlarınızı girin.</div>';
+                return;
+            }
+
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'pasaparola-game';
+                const ref = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
+                const snapshot = await getDocs(ref);
+                
+                let scores = [];
+                snapshot.forEach(doc => scores.push(doc.data()));
+                
+                scores.sort((a, b) => b.score - a.score);
+                scores = scores.slice(0, 15); 
+
+                if(scores.length === 0) {
+                    list.innerHTML = '<div class="text-center text-gray-400 mt-10 font-bold">Henüz kimse oynamadı. İlk sen ol!</div>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                scores.forEach((s, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'glass-panel p-4 rounded-2xl flex items-center justify-between border border-white/10';
+                    let rankClass = 'text-gray-400'; let rankIcon = `#${index + 1}`;
+                    if(index === 0) { rankClass = 'text-yellow-400'; rankIcon = '🥇'; }
+                    else if(index === 1) { rankClass = 'text-gray-300'; rankIcon = '🥈'; }
+                    else if(index === 2) { rankClass = 'text-orange-400'; rankIcon = '🥉'; }
+
+                    item.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl font-black ${rankClass} w-8 text-center">${rankIcon}</span>
+                            <div class="flex flex-col text-left">
+                                <span class="font-bold text-white text-lg">${s.username}</span>
+                                <span class="text-xs text-gray-400 font-semibold">Toplam Skor</span>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-black text-emerald-400 drop-shadow-md">${s.score}</div>
+                    `;
+                    list.appendChild(item);
+                });
+            } catch(e) {
+                list.innerHTML = '<div class="text-center text-red-400 mt-10 font-bold">Bağlantı hatası oluştu.</div>';
+            }
+        }
+
+        // Enter Tuşu kontrolü
+        document.addEventListener("keypress", function(event) {
+            if (event.target && event.target.id === 'answerInput' && event.key === "Enter") { 
+                event.preventDefault(); 
+                window.handleAnswer(); 
+            }
+        });
+
+        // Resize
+        window.addEventListener('resize', () => {
+            if (isGameActive) {
+                buildCircle();
+                loadQuestion(currentIndex);
+            }
+        });
+    </script>
+</body>
+</html>
